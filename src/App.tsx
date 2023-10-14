@@ -1,25 +1,56 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { ApolloProvider } from "@apollo/client";
+import {
+  CssBaseline,
+  StyledEngineProvider,
+  ThemeProvider,
+} from "@mui/material";
 
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { UserProvider } from "./context";
+import { client } from "./graphql/client";
+import { authRoutes, protectedRoutes } from "./routes";
+import { MainLayout, PublicLayout } from "./layout";
+import { NotFound } from "./pages";
+import { theme } from "./theme";
+import { RouteProps } from "react-router-dom";
+import { PostProvider } from "./context/post";
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <UserProvider>
+      <ApolloProvider client={client}>
+        <PostProvider>
+          <ThemeProvider theme={theme}>
+            <StyledEngineProvider>
+              <CssBaseline>
+                <BrowserRouter>
+                  <Routes>
+                    <Route element={<PublicLayout />}>
+                      {authRoutes.map((route: RouteProps, index: number) => (
+                        <Route
+                          path={route.path}
+                          element={route.element}
+                          key={index}
+                        />
+                      ))}
+                    </Route>
+                    <Route element={<MainLayout />}>
+                      {protectedRoutes.map((route: RouteProps, key: number) => (
+                        <Route
+                          path={route.path}
+                          element={route.element}
+                          key={key}
+                        ></Route>
+                      ))}
+                    </Route>
+                    <Route path="/*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </CssBaseline>
+            </StyledEngineProvider>
+          </ThemeProvider>
+        </PostProvider>
+      </ApolloProvider>
+    </UserProvider>
   );
 }
 
